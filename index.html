@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>UVScope — 2D content on 3D models for projection mapping</title>
+  <meta name="description" content="UVScope — preview 2D video, graphics and live NDI on OBJ/FBX models. FBX cameras, view presets, grids, scrubbing, looping, and reference recording (H.264 + AAC). macOS." />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --panel:#11151b;
+      --panel2:#0f1318;
+      --text:#e9eef6;
+      --muted:#a8b2c1;
+      --line:rgba(255,255,255,.10);
+      --shadow:0 20px 60px rgba(0,0,0,.45);
+      --r:18px;
+      --r2:28px;
+      --max:1120px;
+      --accent:#78a6ff;
+      --accent2:#7bffcf;
+    }
+
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.5;
+    }
+
+    /* FIX: stable background gradients (no visible seams) */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-240px;
+      z-index:-1;
+      pointer-events:none;
+      background:
+        radial-gradient(1200px 700px at 20% -10%, rgba(120,166,255,.18), transparent 55%),
+        radial-gradient(1000px 600px at 90% 0%, rgba(123,255,207,.10), transparent 55%);
+      transform:translateZ(0);
+      will-change:transform;
+    }
+
+    a{ color:inherit; text-decoration:none }
+    .wrap{ max-width:var(--max); margin:0 auto; padding:0 20px }
+
+    /* Top bar */
+    .top{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(11,13,16,.62);
+      border-bottom:1px solid var(--line);
+    }
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 0;
+      gap:14px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+    }
+    .brand img{
+      width:28px;
+      height:28px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .menu{
+      display:flex;
+      gap:14px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .menu a{
+      padding:8px 10px;
+      border-radius:999px;
+    }
+    .menu a:hover{
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+    }
+    .actions{
+      display:flex;
+      gap:10px;
+    }
+
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      padding:10px 14px;
+      border-radius:999px;
+      font-size:14px;
+      display:inline-flex;
+      align-items:center;
+    }
+    .btn:hover{
+      background:rgba(255,255,255,.07);
+    }
+    .btn.primary{
+      background:linear-gradient(135deg,rgba(120,166,255,.95),rgba(120,166,255,.55));
+      border-color:rgba(120,166,255,.55);
+      color:#061021;
+    }
+
+    /* Hero */
+    .hero{ padding:64px 0 28px }
+    .heroGrid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:18px;
+    }
+    @media(max-width:920px){
+      .heroGrid{ grid-template-columns:1fr }
+      .menu{ display:none }
+    }
+
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:var(--r2);
+      box-shadow:var(--shadow);
+    }
+
+    .heroMain{ padding:26px }
+    h1{
+      margin:0 0 12px;
+      font-size:44px;
+      line-height:1.05;
+    }
+    .sub{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:17px;
+    }
+    .heroCtas{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .badge{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+    }
+
+    .heroSide{ padding:20px }
+    .mock{
+      height:240px;
+      border-radius:18px;
+      border:1px dashed rgba(255,255,255,.20);
+      background:rgba(0,0,0,.20);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:rgba(233,238,246,.70);
+      text-align:center;
+    }
+    .metaRow{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .mini{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    .mini .k{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .mini .v{
+      font-weight:650;
+      margin-top:4px;
+    }
+
+    section{ padding:42px 0 }
+    h2{
+      margin:0 0 16px;
+      font-size:28px;
+    }
+
+    .grid3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+    @media(max-width:900px){
+      .grid3{ grid-template-columns:1fr }
+    }
+
+    .feature{
+      padding:16px;
+      border-radius:var(--r);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    .feature h3{
+      margin:0 0 8px;
+      font-size:16px;
+    }
+    .feature p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .steps{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+    @media(max-width:900px){
+      .steps{ grid-template-columns:1fr }
+    }
+
+    .step{
+      padding:18px;
+      border-radius:var(--r);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    .num{
+      width:28px;
+      height:28px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(120,166,255,.18);
+      margin-bottom:10px;
+      font-weight:700;
+    }
+
+    .pricing{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+    @media(max-width:900px){
+      .pricing{ grid-template-columns:1fr }
+    }
+
+    .plan{
+      padding:18px;
+      border-radius:var(--r2);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    .plan.featured{
+      background:linear-gradient(180deg,rgba(120,166,255,.16),rgba(255,255,255,.03));
+      border-color:rgba(120,166,255,.35);
+    }
+    .price{
+      font-size:30px;
+      margin:10px 0;
+    }
+    .ul{
+      padding-left:18px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .faq{
+      max-width:860px;
+      display:grid;
+      gap:10px;
+    }
+    details{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      padding:12px;
+      background:rgba(255,255,255,.02);
+    }
+    summary{
+      cursor:pointer;
+      font-weight:650;
+    }
+
+    footer{
+      border-top:1px solid var(--line);
+      padding:26px 0 38px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="top">
+  <div class="wrap nav">
+    <a class="brand" href="#top">
+      <img src="logo.png" alt="UVScope logo">
+      <div>UVScope</div>
+    </a>
+    <div class="menu">
+      <a href="#features">Features</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#usecases">Use cases</a>
+      <a href="#pricing">License</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#pricing">Get license</a>
+      <a class="btn primary" href="#download">Download</a>
+    </div>
+  </div>
+</div>
+
+<main id="top">
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="heroGrid">
+    <div class="card heroMain">
+      <h1>2D content in a 3D scene — before you go on site</h1>
+      <p class="sub">
+        Preview video, graphics and live NDI on OBJ/FBX models.
+        Instantly see how content sits on geometry, where lines break,
+        and how edges, corners and seams really look.
+      </p>
+
+      <div class="heroCtas" id="download">
+        <a class="btn primary" href="#">Download for macOS</a>
+        <a class="btn" href="#">Watch demo</a>
+      </div>
+
+      <div class="badges">
+        <div class="badge">OBJ + FBX</div>
+        <div class="badge">Realtime NDI</div>
+        <div class="badge">Video & images</div>
+        <div class="badge">FBX cameras</div>
+        <div class="badge">Reference recording</div>
+      </div>
+    </div>
+
+    <div class="card heroSide">
+      <div class="mock">
+  <img
+    src="hero-preview.png"
+    alt="UVScope preview"
+    style="
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:18px;
+    "
+  />
+</div>
+
+      <div class="metaRow">
+        <div class="mini">
+          <div class="k">Models</div>
+          <div class="v">OBJ · FBX</div>
+        </div>
+        <div class="mini">
+          <div class="k">Sources</div>
+          <div class="v">NDI · Video · Images</div>
+        </div>
+        <div class="mini">
+          <div class="k">Cameras</div>
+          <div class="v">FBX import · Presets · Position lock</div>
+        </div>
+        <div class="mini">
+          <div class="k">Recording</div>
+          <div class="v">H.264 + AAC</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+<h2>Key features</h2>
+<div class="grid3">
+  <div class="feature">
+    <h3>2D content on 3D models</h3>
+    <p>Preview video and graphics on OBJ/FBX geometry and immediately spot distortions, broken lines and problematic areas.</p>
+  </div>
+  <div class="feature">
+    <h3>Built for projection mapping</h3>
+    <p>A practical tool to validate mapping before the venue: architecture, installations and complex shapes in one scene.</p>
+  </div>
+  <div class="feature">
+    <h3>Live NDI from 2D software</h3>
+    <p>Receive NDI from After Effects, Resolume, VJ tools and any NDI-compatible app — edit where you’re comfortable and see results on 3D in realtime.</p>
+  </div>
+  <div class="feature">
+    <h3>Video files and still images</h3>
+    <p>Load clips and static images with loop, scrub bar and play/pause — perfect for offline preview when NDI isn’t needed.</p>
+  </div>
+  <div class="feature">
+    <h3>FBX cameras & view presets</h3>
+    <p>Import cameras from FBX and view the scene from director or render cameras, switch angles and lock camera position while freely looking around.</p>
+  </div>
+  <div class="feature">
+    <h3>Reference video recording</h3>
+    <p>Capture exactly what you see in H.264 + AAC, including video audio and microphone voice, for approvals and reviews.</p>
+  </div>
+</div>
+</section>
+
+<!-- WORKFLOW -->
+<section id="workflow">
+<h2>Workflow</h2>
+<div class="steps">
+  <div class="step">
+    <div class="num">1</div>
+    <h3>Load the scene</h3>
+    <p>Open OBJ or FBX models. UVScope loads geometry, UVs and cameras into a ready-to-review scene.</p>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <h3>Feed content</h3>
+    <p>Select an NDI source or load a video/image file for offline preview.</p>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <h3>Review and capture</h3>
+    <p>Switch cameras and grids, adjust visibility and record reference videos with voice comments if needed.</p>
+  </div>
+</div>
+</section>
+
+<!-- USE CASES -->
+<section id="usecases">
+<h2>Use cases</h2>
+<div class="grid3">
+  <div class="feature">
+    <h3>Pre-venue mapping validation</h3>
+    <p>Test content on real geometry before arriving on site — fewer surprises, faster setup.</p>
+  </div>
+  <div class="feature">
+    <h3>Realtime creative iteration</h3>
+    <p>Adjust compositions in After Effects or Resolume and instantly see how they behave on the 3D object.</p>
+  </div>
+  <div class="feature">
+    <h3>Client & art director reviews</h3>
+    <p>Record clear reference videos with voice notes and send them for fast approvals.</p>
+  </div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+<h2>Trial & license</h2>
+<div class="pricing">
+  <div class="plan">
+    <h3>Trial</h3>
+    <div class="price">Free / 10 days</div>
+    <ul class="ul">
+      <li>Full functionality</li>
+      <li>No registration</li>
+      <li>Offline file preview</li>
+      <li>Realtime NDI</li>
+    </ul>
+    <a class="btn" href="#download">Download trial</a>
+  </div>
+  <div class="plan featured">
+    <h3>License</h3>
+    <div class="price">$— one-time</div>
+    <ul class="ul">
+      <li>1 Mac (hardware fingerprint)</li>
+      <li>Offline activation via license key</li>
+      <li>No subscription</li>
+      <li>Re-issue available if hardware changes</li>
+    </ul>
+    <a class="btn primary" href="#">Get license</a>
+  </div>
+</div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+<h2>FAQ</h2>
+<div class="faq">
+  <details>
+    <summary>What formats are supported?</summary>
+    <p>Models: OBJ and FBX. Sources: NDI, MOV video files and PNG/JPG images.</p>
+  </details>
+
+  <details>
+    <summary>Does it work offline?</summary>
+    <p>Yes. File-based preview works fully offline. NDI requires a network, licensing does not.</p>
+  </details>
+
+  <details>
+    <summary>How does licensing work?</summary>
+    <p>The trial runs for 10 days. After that, UVScope is activated using a license key tied to a hardware fingerprint.</p>
+  </details>
+
+  <details>
+    <summary>What if I change my computer?</summary>
+    <p>If your hardware fingerprint changes, a re-issue key is available.</p>
+  </details>
+
+  <details>
+    <summary>How do I use NDI?</summary>
+    <p>Select NDI as the source, choose the feed from the list, and UVScope applies it as a live texture on the model in realtime.</p>
+  </details>
+
+  <details>
+    <summary>Can UVScope import cameras from FBX?</summary>
+    <p>Yes. UVScope imports FBX cameras so you can review the scene through director or render camera angles.</p>
+  </details>
+
+  <details>
+    <summary>What does camera lock mean?</summary>
+    <p>Camera lock fixes the camera position while still allowing you to look around by rotating the view — ideal for consistent viewpoints during reviews.</p>
+  </details>
+
+  <details>
+    <summary>Can I control face visibility and inactive sides?</summary>
+    <p>Yes. UVScope supports Both / Front / Back face modes and inactive side display options such as Gray or Hide.</p>
+  </details>
+
+  <details>
+    <summary>Is there scrubbing and looping for video files?</summary>
+    <p>Yes. Video playback includes scrubbing, looping and play/pause controls for precise offline preview.</p>
+  </details>
+
+  <details>
+    <summary>How does reference recording work?</summary>
+    <p>UVScope records exactly what you see to H.264 + AAC, including video audio and microphone voice.</p>
+  </details>
+
+  <details>
+    <summary>Can I balance microphone and video audio levels?</summary>
+    <p>Yes. Separate gain controls and level meters help keep voice comments clear over the content audio.</p>
+  </details>
+
+  <details>
+    <summary>Is UVScope suitable for client presentations?</summary>
+    <p>Yes. The clean UI, shortcuts and quick view switching make it ideal for art directors and client reviews.</p>
+  </details>
+</div>
+</section>
+
+<footer>
+  <div class="wrap">© <span id="y"></span> UVScope</div>
+</footer>
+
+</div>
+</main>
+
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
