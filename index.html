@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <title>UVScope — 2D content on 3D models for projection mapping</title>
-  <meta name="description" content="UVScope — preview 2D video, graphics and live NDI on OBJ/FBX models. FBX cameras, view presets, grids, scrubbing, looping, and reference recording (H.264 + AAC). macOS." />
+  <meta name="description" content="UVScope — preview 2D video, graphics and live NDI on OBJ/FBX models. FBX cameras, view presets, grids, scrubbing, looping, and reference recording (H.264 + AAC). macOS 13.5+." />
 
   <!-- Favicons -->
   <link rel="icon" type="image/png" href="favicon.png" />
@@ -108,10 +108,9 @@
       font-size:14px;
       display:inline-flex;
       align-items:center;
+      gap:10px;
     }
-    .btn:hover{
-      background:rgba(255,255,255,.07);
-    }
+    .btn:hover{ background:rgba(255,255,255,.07) }
     .btn.primary{
       background:linear-gradient(135deg,rgba(120,166,255,.95),rgba(120,166,255,.55));
       border-color:rgba(120,166,255,.55);
@@ -308,6 +307,7 @@
       padding:26px 0 38px;
       color:var(--muted);
     }
+    footer a{ color: var(--accent); }
   </style>
 </head>
 
@@ -327,8 +327,8 @@
       <a href="#faq">FAQ</a>
     </div>
     <div class="actions">
-     <a class="btn" href="https://freemansart.gumroad.com/l/chbmdb" target="_blank" rel="noopener">Get license</a>
-      <a class="btn primary" href="#download">Download</a>
+      <a class="btn" href="#pricing">Get license</a>
+      <a class="btn primary" href="UVScope.dmg" download>Download</a>
     </div>
   </div>
 </div>
@@ -348,7 +348,7 @@
       </p>
 
       <div class="heroCtas" id="download">
-        <a class="btn primary" href="#">Download for macOS</a>
+        <a class="btn primary" href="UVScope.dmg" download>Download for macOS</a>
         <a class="btn" href="#">Watch demo</a>
       </div>
 
@@ -358,22 +358,14 @@
         <div class="badge">Video & images</div>
         <div class="badge">FBX cameras</div>
         <div class="badge">Reference recording</div>
+        <div class="badge">macOS 13.5+</div>
       </div>
     </div>
 
     <div class="card heroSide">
       <div class="mock">
-  <img
-    src="hero-preview.png"
-    alt="UVScope preview"
-    style="
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      border-radius:18px;
-    "
-  />
-</div>
+        Screenshot / video preview placeholder
+      </div>
 
       <div class="metaRow">
         <div class="mini">
@@ -482,7 +474,7 @@
       <li>Offline file preview</li>
       <li>Realtime NDI</li>
     </ul>
-    <a class="btn" href="#download">Download trial</a>
+    <a class="btn" href="UVScope.dmg" download>Download trial</a>
   </div>
   <div class="plan featured">
     <h3>License</h3>
@@ -493,7 +485,7 @@
       <li>No subscription</li>
       <li>Re-issue available if hardware changes</li>
     </ul>
-    <a class="btn primary" href="https://freemansart.gumroad.com/l/chbmdb" target="_blank" rel="noopener">Get license</a>
+    <a class="btn primary" href="#">Get license</a>
   </div>
 </div>
 </section>
@@ -505,6 +497,11 @@
   <details>
     <summary>What formats are supported?</summary>
     <p>Models: OBJ and FBX. Sources: NDI, MOV video files and PNG/JPG images.</p>
+  </details>
+
+  <details>
+    <summary>What macOS version is required?</summary>
+    <p>UVScope requires macOS 13.5 or later (Apple Silicon or Intel).</p>
   </details>
 
   <details>
@@ -565,7 +562,10 @@
 </section>
 
 <footer>
-  <div class="wrap">© <span id="y"></span> UVScope</div>
+  <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div>© <span id="y"></span> UVScope</div>
+    <div>Support: <a href="mailto:support@blackfeatherapps.com">support@blackfeatherapps.com</a></div>
+  </div>
 </footer>
 
 </div>
